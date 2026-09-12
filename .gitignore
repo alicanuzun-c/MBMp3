@@ -1,2 +1,14 @@
-fp-info-cache
-*-backups/
+# ESP-IDF build çıktıları
+firmware/build/
+firmware/managed_components/
+firmware/dependencies.lock
+
+# KiCad geçici/yedek dosyalar
+hardware/*.kicad_prl
+hardware/*-backups/
+hardware/_autosave*
+hardware/fp-info-cache
+
+# Genel
+.vscode/
+*.log
