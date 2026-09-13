@@ -1,6 +1,7 @@
 {
   "navigation": {
     "selectedUserPageObject": "[mbmp3_screen.eez-project]:/userPages/0",
+    "selectedBitmapObject": "[mbmp3_screen.eez-project]:/bitmaps/0",
     "subnavigationSelectedItems": {}
   },
   "layoutModel": {
@@ -21,7 +22,8 @@
           },
           {
             "type": "border",
-            "size": 240,
+            "selected": 2,
+            "size": 132.5,
             "location": "right",
             "children": [
               {
@@ -77,6 +79,7 @@
           {
             "type": "border",
             "selected": 0,
+            "size": 0,
             "location": "bottom",
             "children": [
               {
@@ -194,30 +197,18 @@
             {
               "type": "tabset",
               "id": "EDITORS",
-              "weight": 65,
+              "weight": 56.06382978723404,
               "enableDeleteWhenEmpty": false,
               "enableClose": false,
               "children": [
                 {
                   "type": "tab",
-                  "id": "#14b14d94-6520-4cc3-8457-555e2d419d6a",
-                  "name": "Settings",
-                  "component": "editor",
-                  "config": {
-                    "objectPath": "[mbmp3_screen.eez-project]:/settings",
-                    "subObjectPath": "[mbmp3_screen.eez-project]:/settings",
-                    "permanent": false
-                  },
-                  "icon": "material:settings"
-                },
-                {
-                  "type": "tab",
-                  "id": "#83f73abd-ae67-4d0b-aadc-d8d176720ad8",
+                  "id": "#3cf1ea16-c350-48f5-8e23-0e5590909fee",
                   "name": "SCREEN_BOOT",
                   "component": "editor",
                   "config": {
                     "objectPath": "[mbmp3_screen.eez-project]:/userPages/0",
-                    "permanent": false
+                    "permanent": true
                   },
                   "icon": "svg:page"
                 }
@@ -227,12 +218,12 @@
             {
               "type": "row",
               "id": "#f3a92ec9-9bf6-40a5-8b6b-51c88c0a07e5",
-              "weight": 20,
+              "weight": 28.93617021276596,
               "children": [
                 {
                   "type": "tabset",
                   "id": "#8830a78b-7d80-49da-aedf-f6cf471d3fd3",
-                  "weight": 2,
+                  "weight": 1.4406474820143884,
                   "children": [
                     {
                       "type": "tab",
@@ -247,7 +238,7 @@
                 {
                   "type": "tabset",
                   "id": "#15ab7e78-735e-4a32-aae6-09470fe188c5",
-                  "weight": 1,
+                  "weight": 1.5593525179856116,
                   "children": [
                     {
                       "type": "tab",
@@ -633,7 +624,8 @@
                       "component": "bitmaps",
                       "enableClose": false
                     }
-                  ]
+                  ],
+                  "active": true
                 },
                 {
                   "type": "tabset",
@@ -1071,13 +1063,42 @@
   "objects": {
     "[mbmp3_screen.eez-project]:/userPages/0[flow-state]": {
       "selectionFront": {},
-      "selectionBack": {},
+      "selectionBack": {
+        "0": {
+          "0": {}
+        }
+      },
       "transform": {
         "translate": {
-          "x": -340.45000000000005,
-          "y": -145.2
+          "x": -113.8387445887447,
+          "y": -154.49134199134193
         },
-        "scale": 0.9
+        "scale": 1.25
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[mbmp3_screen.eez-project]:/userPages/1[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {
+            "1": {
+              "$selected": true
+            }
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -120,
+          "y": -160
+        },
+        "scale": 1.25
       },
       "timeline": {
         "isEditorActive": false,
@@ -1100,9 +1121,15 @@
   "selectedStylePropertyName": "",
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
-  "lvglExpandedPropertiesGroup": [],
+  "lvglExpandedPropertiesGroup": [
+    "MARGIN",
+    "TEXT",
+    "MISCELLANEOUS",
+    "BACKGROUND"
+  ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
-  "flowZoom": 0.9,
-  "implementationLanguage": "C"
+  "flowZoom": 1.25,
+  "implementationLanguage": "C",
+  "openDialogDefaultPath": "C:\\Users\\alica\\Downloads\\heart_png.png"
 }

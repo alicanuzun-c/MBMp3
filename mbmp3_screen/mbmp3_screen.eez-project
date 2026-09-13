@@ -141,42 +141,156 @@
           "heightUnit": "px",
           "children": [
             {
-              "objID": "6b272cb8-48b4-467f-c130-a1edc1f930b7",
-              "type": "LVGLLabelWidget",
-              "left": 356,
-              "top": 232,
-              "width": 89,
-              "height": 16,
+              "objID": "e44e8b98-c7af-4d36-e569-2eb73178b23d",
+              "type": "LVGLContainerWidget",
+              "left": 0,
+              "top": 0,
+              "width": 240,
+              "height": 36,
               "customInputs": [],
               "customOutputs": [],
               "style": {
-                "objID": "a9bf737e-205d-4003-aae9-0ca3b6710d43",
+                "objID": "e441bd7f-29d9-4f81-fa0a-2c5aaf54cf46",
                 "useStyle": "default",
                 "conditionalStyles": [],
                 "childStyles": []
               },
+              "hiddenInEditor": false,
               "timeline": [],
               "eventHandlers": [],
+              "identifier": "nav_top",
               "leftUnit": "px",
               "topUnit": "px",
-              "widthUnit": "content",
-              "heightUnit": "content",
-              "children": [],
+              "widthUnit": "px",
+              "heightUnit": "px",
+              "children": [
+                {
+                  "objID": "bdc11f68-cb67-477f-cb5d-6ae3e61582b1",
+                  "type": "LVGLImageWidget",
+                  "left": 173,
+                  "top": 8,
+                  "width": 20,
+                  "height": 20,
+                  "customInputs": [],
+                  "customOutputs": [],
+                  "style": {
+                    "objID": "b240c47d-3d00-46b0-806a-5c70b9f00bb9",
+                    "useStyle": "default",
+                    "conditionalStyles": [],
+                    "childStyles": []
+                  },
+                  "hiddenInEditor": false,
+                  "timeline": [],
+                  "eventHandlers": [],
+                  "leftUnit": "px",
+                  "topUnit": "px",
+                  "widthUnit": "content",
+                  "heightUnit": "content",
+                  "children": [],
+                  "widgetFlags": "ADV_HITTEST|CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
+                  "hiddenFlagType": "literal",
+                  "clickableFlagType": "literal",
+                  "flagScrollbarMode": "",
+                  "flagScrollDirection": "",
+                  "scrollSnapX": "",
+                  "scrollSnapY": "",
+                  "checkedStateType": "literal",
+                  "disabledStateType": "literal",
+                  "states": "",
+                  "localStyles": {
+                    "objID": "7add0912-8178-4bc1-cfc4-02863bfd933a"
+                  },
+                  "group": "",
+                  "groupIndex": 0,
+                  "image": "heart_purple",
+                  "setPivot": false,
+                  "pivotX": 0,
+                  "pivotY": 0,
+                  "zoom": 256,
+                  "angle": 0,
+                  "innerAlign": "CENTER",
+                  "sizeMode": "VIRTUAL",
+                  "value": 0,
+                  "valueType": "literal",
+                  "previewValue": 0
+                },
+                {
+                  "objID": "a092ba1c-820c-4136-9265-cb2980d1a4cf",
+                  "type": "LVGLLabelWidget",
+                  "left": 198,
+                  "top": 10,
+                  "width": 36,
+                  "height": 16,
+                  "customInputs": [],
+                  "customOutputs": [],
+                  "style": {
+                    "objID": "15d55434-c430-478c-ab26-2abab3aad008",
+                    "useStyle": "default",
+                    "conditionalStyles": [],
+                    "childStyles": []
+                  },
+                  "hiddenInEditor": false,
+                  "timeline": [],
+                  "eventHandlers": [],
+                  "identifier": "text_time",
+                  "leftUnit": "px",
+                  "topUnit": "px",
+                  "widthUnit": "content",
+                  "heightUnit": "content",
+                  "children": [],
+                  "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
+                  "hiddenFlagType": "literal",
+                  "clickableFlagType": "literal",
+                  "flagScrollbarMode": "",
+                  "flagScrollDirection": "",
+                  "scrollSnapX": "",
+                  "scrollSnapY": "",
+                  "checkedStateType": "literal",
+                  "disabledStateType": "literal",
+                  "states": "",
+                  "localStyles": {
+                    "objID": "e0fee3fe-6b89-4cf1-d605-7fcb33e5374e",
+                    "definition": {
+                      "MAIN": {
+                        "DEFAULT": {
+                          "text_color": "#107D87"
+                        }
+                      }
+                    }
+                  },
+                  "group": "",
+                  "groupIndex": 0,
+                  "text": "23:59",
+                  "textType": "literal",
+                  "longMode": "WRAP",
+                  "recolor": false,
+                  "useStaticText": true
+                }
+              ],
               "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
               "hiddenFlagType": "literal",
+              "clickableFlag": true,
               "clickableFlagType": "literal",
+              "flagScrollbarMode": "",
+              "flagScrollDirection": "",
+              "scrollSnapX": "",
+              "scrollSnapY": "",
               "checkedStateType": "literal",
               "disabledStateType": "literal",
               "states": "",
               "localStyles": {
-                "objID": "b70b99db-02c2-420a-cbdf-e6366dc84e67"
+                "objID": "89672e75-9208-4831-f12a-a07ae5918cc2",
+                "definition": {
+                  "MAIN": {
+                    "DEFAULT": {
+                      "bg_color": "#A99DB7",
+                      "bg_opa": 255
+                    }
+                  }
+                }
               },
-              "groupIndex": 0,
-              "text": "Hello, world!",
-              "textType": "literal",
-              "longMode": "WRAP",
-              "recolor": false,
-              "useStaticText": true
+              "group": "",
+              "groupIndex": 0
             }
           ],
           "widgetFlags": "CLICKABLE|PRESS_LOCK|CLICK_FOCUSABLE|GESTURE_BUBBLE|SNAPPABLE|SCROLLABLE|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER",
@@ -187,7 +301,14 @@
           "disabledStateType": "literal",
           "states": "",
           "localStyles": {
-            "objID": "8eb86917-c831-b762-5685-8d01972e8a22"
+            "objID": "8eb86917-c831-b762-5685-8d01972e8a22",
+            "definition": {
+              "MAIN": {
+                "DEFAULT": {
+                  "bg_color": "#b8aec4"
+                }
+              }
+            }
           },
           "groupIndex": 0
         }
@@ -216,7 +337,17 @@
     "groups": []
   },
   "fonts": [],
-  "bitmaps": [],
+  "bitmaps": [
+    {
+      "objID": "7cc96ba0-7e8b-41e1-9d95-688efcc9a625",
+      "name": "heart_purple",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAABGpJREFUeJx9VFtsVEUY/s5lz+6ePdvthV6oLBXUAmokIGiwNYgXQC4V8MGImvhmIhpjNAIGk4aamngLxPCAkcQXE7XggzRItW1IEJsoxGgrKeXaLnTpZdvtnu3unjlnZpw5bZWK8J/8O+cy/zfffN8/q+OGeLqsMeO5LKqIe8LzCJqBjrah5idvnPNU5c5mMkl3czBw8ayIyeXxyIojZ5vOyO+6/Hlxxaex9LhdGXHDqucwUE9MdDRonFtrF+ysVRQ9GTRVQgmPszG1SBUgjCrwuAfGKBgJ1GxY9O7VY+eah3zATDL7XHbEOdj0wevQCgbS5yku/jmJy6nLD7cnDp9TA4XtLGj2EMf75aHqR6y6+Y9iZNhBqpDGcCGJ3691HnFY9nMB9Yq+qWrvq1VFlfW1xTGULjFAhlVkrzCYYQ3l0RIsii1FVh9bS5C//+6ieKCmPI5ImYbUqAJDCSAWLEFFKI48svc9br2zQy/Y5IBZYmLbqg2oXBlC5iJF6oyHWGkAhlaBCF+HzmTryzkvh9X3PIE51RFYlRrU80BEjSCkmbgr+gD6s711w5lEna4oKqw7dSzYHkTiGEEuyZAbYmBCx4ChImrpWFqxHERzUDI/BCfHkO7x4DlCR7FHJpwJqmEYqgmFq9IUhtAcBaXLdAx2CMBhBmeCQTotMxhSUe3GwcVMsziAVJpgYtD1gTiXgBy6EoSm6L7rujQ/c0mY8FUBI2Jl7k5NJHkOTgHP5VAEFS7Gq38UQHLcZ+YJRCo+eApFjtkosEmfgi6ric1gX2AgWQ5VtINmKD4qE5XU4z5TCPD8uGgpASSZMAFG5SVWZYKFCqGrIgENt2HMSa079MPXO15YvxXM1jF+zgMpCB0lQ2+qheUWJSsmUxHsxLscnUReZO/EacHQblMNekDvGP/o6MZQ49zM6CDCFaJZNQWuM2WKZOjntFaSGpdgVC4hF6EgNAebjCPPsv2nnP1H/cY2o6HjLvEaDn3b8k0pnRdejJViK9y3kUr9xI3UjXKZAkwFJtwRJCcHcG2yF6Fi5U2PKJ1wpo9eS9+uATEMrHF2X6kOomJu6aIyQwn7uvDp1hA9McUKkqEH200j443aaW80XR61Ok70fdL9z1meiWhJZJsDe3PbYMuHj1VuhaUV+VvlvkdSNwjdsiJt9KZPw9Vy3xVVWR+blnlhBmMW4PeJPb0b5723cILmum06uphRFogEYuDTRrhc9KmbkcxQQKaP8NxfJ/v39aD/X4xZgDIeXF97vFAg7T+3tl4q4/E7Vpc9A6aK1uIORt0kBrJ9Is/i3vqaZ805Wu/Jltn1NwHu/eIlqT/ZNG/PQcVzl3dnuraUhaqha4YwoA+Olu4yi4wuTVGv7295zftv/U2AM9F69f2mNSVvbU7YV7YsKV4FK1CMhGDnqfkfT+U/a/yp8//rbgkoQ7Por4bGG4bcy29fd9lCq0LfRWjgN/Ffdcu4LWB7Yt+QGI7Wh994XpyQ8tpl1ce/PNGcul3N38VNUn0yEpnsAAAAAElFTkSuQmCC",
+      "bpp": 32,
+      "alwaysBuild": false,
+      "lvglBinaryOutputFormat": 3,
+      "lvglDither": false
+    }
+  ],
   "colors": [],
   "themes": [
     {
