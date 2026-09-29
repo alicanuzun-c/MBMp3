@@ -2,4 +2,48 @@
 
 Custom made MP3 Player.
 
-The ILI9341 TFT display is powered from 3.3 V. The screen runs the three-page EEZ Studio UI with LVGL 9.5.0 and shows the most recently touched X/Y coordinates.
+## Hardware
+
+### ESP32 and ILI9341 TFT
+
+The display is configured for 240 x 320 portrait resolution. Connect the TFT and resistive touch controller as follows:
+
+| TFT / touch pin | ESP32 pin |
+| --- | --- |
+| TFT SDO / MISO | GPIO 12 |
+| TFT SDI / MOSI | GPIO 13 |
+| TFT SCK | GPIO 14 |
+| TFT CS | GPIO 15 |
+| TFT D/C | GPIO 2 |
+| TFT RESET | EN / RESET |
+| TFT LED / backlight | GPIO 21 |
+| Touch T_IRQ | GPIO 36 |
+| Touch T_OUT / MISO | GPIO 39 |
+| Touch T_DIN / MOSI | GPIO 32 |
+| Touch T_CS | GPIO 33 |
+| Touch T_CLK | GPIO 25 |
+| GND | GND |
+| VCC | 3.3 V |
+
+The TFT uses the ILI9341 controller. Its reset pin is configured as `-1`, so the display reset is tied to the ESP32 EN/RESET line. Power the module from 3.3 V as requested for this setup.
+
+## Software
+
+- Board: ESP32 Dev Module (`esp32dev`), Arduino framework.
+- Display driver: TFT_eSPI 2.5.43, ILI9341, HSPI at 40 MHz.
+- Touch controller: XPT2046, using its own SPI pins and chip-select.
+- UI: LVGL 9.5.0 with the three-screen EEZ Studio (EEZ Flow) export in `Software/src/ui`.
+- Runtime: LVGL and EEZ Flow are serviced by a dedicated FreeRTOS task.
+- LVGL display color format: RGB565. For transparent EEZ image assets, export with alpha (RGB565A8 or ARGB8888); plain RGB565 does not preserve transparency.
+
+Touch input is calibrated in `Software/src/main.cpp`. The current measured calibration is X left/right `236/13` and Y top/bottom `313/7`, mapped to display coordinates `0..239` and `0..319`. Recalibrate these values if the touch panel or rotation changes.
+
+## Build and Upload
+
+Open the `Software` folder as the PlatformIO project, then run:
+
+```sh
+pio run
+pio run --target upload
+pio device monitor
+```

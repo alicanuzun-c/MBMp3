@@ -12,10 +12,10 @@ constexpr int touchMosiPin = 32;
 constexpr int touchMisoPin = 39;
 constexpr int touchClockPin = 25;
 constexpr int touchChipSelectPin = 33;
-constexpr int touchXAtLeft = 236;
-constexpr int touchXAtRight = 13;
-constexpr int touchYAtTop = 313;
-constexpr int touchYAtBottom = 7;
+constexpr int touchXAtLeft = 240;
+constexpr int touchXAtRight = 0;
+constexpr int touchYAtTop = 320;
+constexpr int touchYAtBottom = 0;
 constexpr uint32_t drawBufferRows = 20;
 
 TFT_eSPI tft;
@@ -72,26 +72,6 @@ void createCoordinateLabels() {
     }
 }
 
-void createButtonIconFallbacks() {
-    lv_obj_t *buttons[] = {
-        objects.main_play, objects.main_folder, objects.main_settings,
-        objects.main_play_3, objects.main_folder_3, objects.main_settings_3,
-        objects.main_play_4, objects.main_folder_4, objects.main_settings_4
-    };
-    const char *symbols[] = {
-        LV_SYMBOL_PLAY, LV_SYMBOL_DIRECTORY, LV_SYMBOL_SETTINGS,
-        LV_SYMBOL_PLAY, LV_SYMBOL_DIRECTORY, LV_SYMBOL_SETTINGS,
-        LV_SYMBOL_PLAY, LV_SYMBOL_DIRECTORY, LV_SYMBOL_SETTINGS
-    };
-
-    for (size_t index = 0; index < 9; ++index) {
-        lv_obj_t *icon = lv_label_create(buttons[index]);
-        lv_label_set_text(icon, symbols[index]);
-        lv_obj_set_style_text_color(icon, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-        lv_obj_center(icon);
-    }
-}
-
 void lvglTask(void *) {
     for (;;) {
         ui_tick();
@@ -132,7 +112,6 @@ void setup() {
 
     ui_init();
     createCoordinateLabels();
-    createButtonIconFallbacks();
     xTaskCreatePinnedToCore(lvglTask, "LVGL", 12 * 1024, nullptr, 2, nullptr, 1);
 }
 
