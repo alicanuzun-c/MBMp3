@@ -1,18 +1,21 @@
 #include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
-// put function declarations here:
-int myFunction(int, int);
+static void counterTask(void* parameter) {
+	uint32_t counter = 0;
+
+	for (;;) {
+		Serial.printf("Print Counter : %lu\n", static_cast<unsigned long>(counter++));
+		vTaskDelay(pdMS_TO_TICKS(1000));
+	}
+}
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+	Serial.begin(115200);
+	xTaskCreate(counterTask, "CounterTask", 2048, nullptr, 1, nullptr);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
 }
