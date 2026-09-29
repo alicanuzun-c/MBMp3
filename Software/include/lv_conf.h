@@ -101,7 +101,7 @@
  *  - LV_OS_SDL2
  *  - LV_OS_CUSTOM
  */
-#define LV_USE_OS LV_OS_FREERTOS
+#define LV_USE_OS LV_OS_NONE
 
 #if LV_USE_OS == LV_OS_CUSTOM
 /** Custom OS include header */
@@ -1144,7 +1144,7 @@
  *  - LV_FONT_DEFAULT_UNSCII_8 (enable: LV_FONT_UNSCII_8)
  *  - LV_FONT_DEFAULT_UNSCII_16 (enable: LV_FONT_UNSCII_16)
  */
-#define LV_FONT_DEFAULT LV_FONT_DEFAULT_MONTSERRAT_14
+#define LV_FONT_DEFAULT &lv_font_montserrat_14
 
 #endif /*!LV_USE_CUSTOM_FONT_DEFAULT*/
 
