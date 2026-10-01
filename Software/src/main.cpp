@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
+#include <SD.h>
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
 #include <lvgl.h>
@@ -18,12 +19,19 @@ constexpr int touchYAtTop = 320;
 constexpr int touchYAtBottom = 0;
 constexpr uint32_t drawBufferRows = 20;
 
+// SD kart: SCK/MISO/MOSI ekranla ortak (14/12/13), sadece CS ayri
+constexpr int sdChipSelectPin = 5;
+
 TFT_eSPI tft;
 SPIClass touchscreenSPI(SPI);
 XPT2046_Touchscreen touchscreen(touchChipSelectPin, touchIrqPin);
 lv_display_t *display;
 lv_obj_t *coordinateLabels[3];
 lv_color_t drawBuffer[320 * drawBufferRows];
+
+// Ekran ve SD ayni bus'i kullandigi icin erisimleri sirala
+SemaphoreHandle_t spiBusMutex;
+bool sdReady = false;
 
 uint32_t getMillis() {
     return millis();
@@ -33,10 +41,12 @@ void flushDisplay(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
     const uint32_t width = area->x2 - area->x1 + 1;
     const uint32_t height = area->y2 - area->y1 + 1;
 
+    xSemaphoreTakeRecursive(spiBusMutex, portMAX_DELAY);
     tft.startWrite();
     tft.setAddrWindow(area->x1, area->y1, width, height);
     tft.pushColors(reinterpret_cast<uint16_t *>(pixels), width * height, true);
     tft.endWrite();
+    xSemaphoreGiveRecursive(spiBusMutex);
 
     lv_display_flush_ready(display);
 }
@@ -79,9 +89,37 @@ void lvglTask(void *) {
         vTaskDelay(pdMS_TO_TICKS(waitMs < 5 ? 5 : waitMs));
     }
 }
+
+// SD'ye her erisimde bunlari kullan
+void sdLock()   { xSemaphoreTakeRecursive(spiBusMutex, portMAX_DELAY); }
+void sdUnlock() { xSemaphoreGiveRecursive(spiBusMutex); }
+
+void listSdRoot() {
+    if (!sdReady) return;
+    sdLock();
+    File root = SD.open("/");
+    if (root) {
+        File entry = root.openNextFile();
+        while (entry) {
+            Serial.printf("%s%s  (%u bayt)\n", entry.name(), entry.isDirectory() ? "/" : "", (unsigned)entry.size());
+            entry.close();
+            entry = root.openNextFile();
+        }
+        root.close();
+    }
+    sdUnlock();
+}
 }
 
 void setup() {
+    Serial.begin(115200);
+
+    spiBusMutex = xSemaphoreCreateRecursiveMutex();
+
+    // SD'yi tft.init'ten once pasif yap (ayni bus'ta karismasin)
+    pinMode(sdChipSelectPin, OUTPUT);
+    digitalWrite(sdChipSelectPin, HIGH);
+
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, HIGH);
 
@@ -92,6 +130,13 @@ void setup() {
     tft.init();
     tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
+
+    // SD, TFT_eSPI'nin kullandigi SPI nesnesi uzerinden baslatilir (14/12/13)
+    sdLock();
+    sdReady = SD.begin(sdChipSelectPin, tft.getSPIinstance(), 10000000);
+    sdUnlock();
+    Serial.println(sdReady ? "SD kart hazir" : "SD kart baslatilamadi");
+    listSdRoot();
 
     lv_init();
     lv_tick_set_cb(getMillis);
