@@ -20,7 +20,7 @@ constexpr int touchYAtBottom = 0;
 constexpr uint32_t drawBufferRows = 20;
 
 // SD kart: SCK/MISO/MOSI ekranla ortak (14/12/13), sadece CS ayri
-constexpr int sdChipSelectPin = 5;
+constexpr int sdChipSelectPin = 26;
 
 TFT_eSPI tft;
 SPIClass touchscreenSPI(SPI);
@@ -133,7 +133,7 @@ void setup() {
 
     // SD, TFT_eSPI'nin kullandigi SPI nesnesi uzerinden baslatilir (14/12/13)
     sdLock();
-    sdReady = SD.begin(sdChipSelectPin, tft.getSPIinstance(), 10000000);
+    sdReady = SD.begin(sdChipSelectPin, tft.getSPIinstance(), 400000);
     sdUnlock();
     Serial.println(sdReady ? "SD kart hazir" : "SD kart baslatilamadi");
     listSdRoot();
