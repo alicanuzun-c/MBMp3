@@ -21,15 +21,17 @@ typedef struct _objects_t {
     lv_obj_t *sc_play;
     lv_obj_t *sc_folder;
     lv_obj_t *sc_settings;
-    lv_obj_t *main_settings;
-    lv_obj_t *main_folder;
-    lv_obj_t *main_play;
-    lv_obj_t *main_settings_3;
-    lv_obj_t *main_folder_3;
-    lv_obj_t *main_play_3;
-    lv_obj_t *main_settings_4;
-    lv_obj_t *main_folder_4;
-    lv_obj_t *main_play_4;
+    lv_obj_t *button_play;
+    lv_obj_t *button_folder;
+    lv_obj_t *button_settings;
+    lv_obj_t *button_play_1;
+    lv_obj_t *button_folder_1;
+    lv_obj_t *button_settings_1;
+    lv_obj_t *folder_path_label;
+    lv_obj_t *folder_list;
+    lv_obj_t *button_play_2;
+    lv_obj_t *button_folder_2;
+    lv_obj_t *button_settings_2;
 } objects_t;
 
 extern objects_t objects;

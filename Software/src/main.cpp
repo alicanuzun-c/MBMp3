@@ -34,9 +34,16 @@ lv_display_t *display;
 lv_obj_t *coordinateLabels[3];
 lv_color_t drawBuffer[320 * drawBufferRows];
 
-// Ekran ve SD ayni bus'i kullandigi icin erisimleri sirala
 SemaphoreHandle_t spiBusMutex;
 bool sdReady = false;
+String currentDirectory = "/";
+String selectedTrackPath;
+
+enum FolderEntryKind : uintptr_t {
+    FolderEntryDirectory = 1,
+    FolderEntryTrack = 2,
+    FolderEntryParent = 3
+};
 
 uint32_t getMillis() {
     return millis();
@@ -95,34 +102,124 @@ void lvglTask(void *) {
     }
 }
 
-// SD'ye her erisimde bunlari kullan
 void sdLock()   { xSemaphoreTakeRecursive(spiBusMutex, portMAX_DELAY); }
 void sdUnlock() { xSemaphoreGiveRecursive(spiBusMutex); }
 
-void listSdRoot() {
-    if (!sdReady) return;
-    sdLock();
-    FsFile root;
-    if (root.open("/", O_RDONLY)) {
-        FsFile entry;
-        char entryName[256];
-        while (entry.openNext(&root, O_RDONLY)) {
-            entry.getName(entryName, sizeof(entryName));
-            Serial.printf("%s%s  (%llu bayt)\n",
-                          entryName,
-                          entry.isDir() ? "/" : "",
-                          static_cast<unsigned long long>(entry.fileSize()));
-            entry.close();
-        }
-        root.close();
+void refreshFolderView();
+
+void changeToParentDirectory() {
+    if (currentDirectory == "/") {
+        return;
     }
+
+    const int lastSlash = currentDirectory.lastIndexOf('/');
+    currentDirectory = lastSlash <= 0 ? "/" : currentDirectory.substring(0, lastSlash);
+}
+
+void onFolderEntryClicked(lv_event_t *event) {
+    if (lv_event_get_code(event) != LV_EVENT_CLICKED) {
+        return;
+    }
+
+    const uintptr_t entryKind = reinterpret_cast<uintptr_t>(lv_event_get_user_data(event));
+    if (entryKind == FolderEntryParent) {
+        changeToParentDirectory();
+        refreshFolderView();
+        return;
+    }
+
+    lv_obj_t *button = static_cast<lv_obj_t *>(lv_event_get_target(event));
+    lv_obj_t *label = lv_obj_get_child(button, 0);
+    if (label == nullptr) {
+        return;
+    }
+
+    const String rowText = lv_label_get_text(label);
+    const String entryName = rowText.substring(6);
+    String entryPath = currentDirectory;
+    if (!entryPath.endsWith("/")) {
+        entryPath += "/";
+    }
+    entryPath += entryName;
+
+    if (entryKind == FolderEntryDirectory) {
+        currentDirectory = entryPath;
+        refreshFolderView();
+        return;
+    }
+
+    selectedTrackPath = entryPath;
+    lv_label_set_text_fmt(objects.folder_path_label, "Secildi: %s", selectedTrackPath.c_str());
+}
+
+void addFolderEntry(const String &name, const char *prefix, FolderEntryKind kind, uint16_t rowIndex) {
+    const String rowText = String(prefix) + name;
+    lv_obj_t *button = lv_button_create(objects.folder_list);
+    lv_obj_set_pos(button, 4, 4 + rowIndex * 30);
+    lv_obj_set_size(button, 224, 28);
+    lv_obj_add_event_cb(
+        button,
+        onFolderEntryClicked,
+        LV_EVENT_CLICKED,
+        reinterpret_cast<void *>(static_cast<uintptr_t>(kind)));
+
+    lv_obj_t *label = lv_label_create(button);
+    lv_label_set_text(label, rowText.c_str());
+    lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_DOTS);
+    lv_obj_set_width(label, 212);
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 4, 0);
+}
+
+void refreshFolderView() {
+    lv_obj_clean(objects.folder_list);
+    lv_label_set_text(objects.folder_path_label, currentDirectory.c_str());
+
+    if (!sdReady) {
+        lv_label_set_text(objects.folder_path_label, "SD kart hazir degil");
+        return;
+    }
+
+    sdLock();
+    FsFile directory;
+    if (!directory.open(currentDirectory.c_str(), O_RDONLY) || !directory.isDir()) {
+        sdUnlock();
+        lv_label_set_text(objects.folder_path_label, "Klasor acilamadi");
+        if (directory.isOpen()) {
+            directory.close();
+        }
+        return;
+    }
+
+    uint16_t rowIndex = 0;
+    if (currentDirectory != "/") {
+        addFolderEntry("..", "[DIR] ", FolderEntryParent, rowIndex++);
+    }
+
+    FsFile entry;
+    char entryName[256];
+    while (entry.openNext(&directory, O_RDONLY)) {
+        entry.getName(entryName, sizeof(entryName));
+        String name(entryName);
+        if (entry.isDir()) {
+            addFolderEntry(name, "[DIR] ", FolderEntryDirectory, rowIndex++);
+        } else {
+            name.toLowerCase();
+            if (name.endsWith(".mp3")) {
+                addFolderEntry(String(entryName), "[MP3] ", FolderEntryTrack, rowIndex++);
+            }
+        }
+        entry.close();
+    }
+    directory.close();
     sdUnlock();
+
+    if (rowIndex == 0) {
+        lv_label_set_text(objects.folder_path_label, "Klasor bos veya MP3 yok");
+    }
 }
 }
 
 void setup() {
-    Serial.begin(115200);
-
     spiBusMutex = xSemaphoreCreateRecursiveMutex();
 
     // SD CS'i SD baslatilmadan once pasif tut.
@@ -140,11 +237,6 @@ void setup() {
     tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
 
-    Serial.printf("SD SoftSPI: CS=%u SCK=%u MISO=%u MOSI=%u\n",
-                  sdChipSelectPin,
-                  sdClockPin,
-                  sdMisoPin,
-                  sdMosiPin);
     sdLock();
     sdReady = sdCard.begin(SdSpiConfig(
         sdChipSelectPin,
@@ -152,11 +244,6 @@ void setup() {
         SD_SCK_MHZ(0),
         &sdSoftSpi));
     sdUnlock();
-    Serial.println(sdReady ? "SD kart hazir" : "SD kart baslatilamadi");
-    if (!sdReady) {
-        sdCard.initErrorPrint();
-    }
-    listSdRoot();
 
     lv_init();
     lv_tick_set_cb(getMillis);
@@ -177,6 +264,10 @@ void setup() {
 
     ui_init();
     createCoordinateLabels();
+    lv_obj_set_pos(objects.folder_path_label, 8, 40);
+    lv_obj_set_size(objects.folder_path_label, 224, 18);
+    lv_label_set_long_mode(objects.folder_path_label, LV_LABEL_LONG_MODE_DOTS);
+    refreshFolderView();
     xTaskCreatePinnedToCore(lvglTask, "LVGL", 12 * 1024, nullptr, 2, nullptr, 1);
 }
 
