@@ -18,3 +18,6 @@ AudioPlayResult audioPlayerPlay(const char *path);
 
 // 44.1 kHz stereo 16 bit PCM verir; Bluetooth gorevinden cagrilir.
 size_t audioPlayerReadPcm(uint8_t *destination, size_t requestedBytes);
+
+// Teshis: son cagridan beri Bluetooth'un istedigi ve verilebilen bayt sayisi; sayaclari sifirlar.
+void audioPlayerTakeStats(uint32_t &requestedBytes, uint32_t &deliveredBytes);

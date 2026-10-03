@@ -8,7 +8,6 @@
 #include "board_config.h"
 #include "folder_view.h"
 #include "settings_view.h"
-#include "spi_bus.h"
 #include "ui/screens.h"
 #include "ui/ui.h"
 #include "wifi_clock.h"
@@ -36,12 +35,10 @@ void flushDisplay(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
     const uint32_t width = area->x2 - area->x1 + 1;
     const uint32_t height = area->y2 - area->y1 + 1;
 
-    spiBusLock();
     tft.startWrite();
     tft.setAddrWindow(area->x1, area->y1, width, height);
     tft.pushColors(reinterpret_cast<uint16_t *>(pixels), width * height, true);
     tft.endWrite();
-    spiBusUnlock();
 
     lv_display_flush_ready(display);
 }

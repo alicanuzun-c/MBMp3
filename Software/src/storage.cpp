@@ -3,12 +3,22 @@
 #include <Arduino.h>
 
 #include "board_config.h"
-#include "spi_bus.h"
 
 namespace {
 SoftSpiDriver<sdMisoPin, sdMosiPin, sdClockPin> sdSoftSpi;
 SdFs sdCard;
 bool sdReady = false;
+// SD yazilimsal SPI ile kendi pinlerinde; kilit sadece SdFat'a ayni anda iki gorevin
+// (arayuz ve MP3 cozucu) erismesini engeller, ekran aktarimini beklemez.
+SemaphoreHandle_t storageMutex;
+
+void storageLock() {
+    xSemaphoreTake(storageMutex, portMAX_DELAY);
+}
+
+void storageUnlock() {
+    xSemaphoreGive(storageMutex);
+}
 
 bool endsWithMp3(const char *name) {
     const size_t length = strlen(name);
@@ -21,13 +31,14 @@ bool storageBegin() {
     pinMode(sdChipSelectPin, OUTPUT);
     digitalWrite(sdChipSelectPin, HIGH);
 
-    spiBusLock();
+    storageMutex = xSemaphoreCreateMutex();
+    storageLock();
     sdReady = sdCard.begin(SdSpiConfig(
         sdChipSelectPin,
         DEDICATED_SPI,
         SD_SCK_MHZ(0),
         &sdSoftSpi));
-    spiBusUnlock();
+    storageUnlock();
     return sdReady;
 }
 
@@ -40,13 +51,13 @@ StorageListResult storageListDirectory(const char *path, StorageEntryCallback ca
         return StorageListResult::NotReady;
     }
 
-    spiBusLock();
+    storageLock();
     FsFile directory;
     if (!directory.open(path, O_RDONLY) || !directory.isDir()) {
         if (directory.isOpen()) {
             directory.close();
         }
-        spiBusUnlock();
+        storageUnlock();
         return StorageListResult::OpenFailed;
     }
 
@@ -54,33 +65,38 @@ StorageListResult storageListDirectory(const char *path, StorageEntryCallback ca
     char entryName[256];
     while (entry.openNext(&directory, O_RDONLY)) {
         entry.getName(entryName, sizeof(entryName));
-        if (entry.isDir()) {
+        const bool isDirectory = entry.isDir();
+        entry.close();
+
+        // Arayuz satiri olusturulurken kilidi birak; MP3 cozucu okumaya devam edebilsin.
+        storageUnlock();
+        if (isDirectory) {
             if (strcasecmp(entryName, "System Volume Information") != 0) {
                 callback(entryName, StorageEntryKind::Directory, context);
             }
         } else if (endsWithMp3(entryName)) {
             callback(entryName, StorageEntryKind::Track, context);
         }
-        entry.close();
+        storageLock();
     }
     directory.close();
-    spiBusUnlock();
+    storageUnlock();
     return StorageListResult::Ok;
 }
 
 bool storageOpenFile(FsFile &file, const char *path) {
-    spiBusLock();
+    storageLock();
     if (file.isOpen()) {
         file.close();
     }
     const bool opened = file.open(path, O_RDONLY);
-    spiBusUnlock();
+    storageUnlock();
     return opened;
 }
 
 int storageReadFile(FsFile &file, uint8_t *buffer, size_t size) {
-    spiBusLock();
+    storageLock();
     const int bytesRead = file.read(buffer, size);
-    spiBusUnlock();
+    storageUnlock();
     return bytesRead;
 }

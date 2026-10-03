@@ -3,7 +3,6 @@
 #include "audio_player.h"
 #include "bluetooth.h"
 #include "gui.h"
-#include "spi_bus.h"
 #include "storage.h"
 #include "wifi_clock.h"
 
@@ -22,7 +21,6 @@ void setup() {
     Serial.begin(115200);
     logResetReason();
 
-    spiBusBegin();
     storageBegin();
     guiBegin();
 
@@ -39,5 +37,16 @@ void setup() {
 }
 
 void loop() {
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(5000));
+
+    // Teshis: Bluetooth ses istiyorsa ne kadarini karsilayabildigimizi 5 saniyede bir yaz.
+    uint32_t requestedBytes = 0;
+    uint32_t deliveredBytes = 0;
+    audioPlayerTakeStats(requestedBytes, deliveredBytes);
+    if (requestedBytes > 0) {
+        Serial.printf("[SES] 5 sn: istenen %u B, verilen %u B (%u%%), bos heap: %u\n",
+                      requestedBytes, deliveredBytes,
+                      static_cast<unsigned>(static_cast<uint64_t>(deliveredBytes) * 100 / requestedBytes),
+                      ESP.getFreeHeap());
+    }
 }

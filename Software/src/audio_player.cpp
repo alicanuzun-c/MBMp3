@@ -23,6 +23,9 @@ size_t pcmWritePosition;
 size_t pcmBufferedBytes;
 TaskHandle_t mp3DecoderTaskHandle;
 volatile uint32_t playbackGeneration;
+// Teshis: Bluetooth'un istedigi ve tampondan verilebilen PCM miktari (pcmRingMux ile korunur).
+uint32_t statsRequestedBytes;
+uint32_t statsDeliveredBytes;
 
 void resetPcmRing() {
     portENTER_CRITICAL(&pcmRingMux);
@@ -136,7 +139,15 @@ void mp3DecodeTask(void *) {
                                         samplesInFrame,
                                         frameInfo,
                                         generation)) {
+                    Serial.printf("[MP3] durdu: %s\n",
+                                  generation != playbackGeneration ? "yeni parca secildi"
+                                  : inputEnded                     ? "dosya sonu"
+                                                                   : "MP3 cozulemedi");
                     break;
+                }
+                if (sourceRate == 0) {
+                    Serial.printf("[MP3] format: %d Hz, %d kanal, %d kbps\n",
+                                  frameInfo.hz, frameInfo.channels, frameInfo.bitrate_kbps);
                 }
                 sourceRate = frameInfo.hz;
                 sourceChannels = frameInfo.channels;
@@ -151,15 +162,21 @@ void mp3DecodeTask(void *) {
                 static_cast<int>(pcmChunkFrames),
                 outputFramesInFrame - outputFramePosition);
             for (int index = 0; index < frameCount; ++index) {
-                const int outputFrame = outputFramePosition + index;
-                const int sourceFrame = min(
-                    samplesInFrame - 1,
-                    static_cast<int>((static_cast<int64_t>(outputFrame) * sourceRate) /
-                                     audioSampleRate));
-                const int sourceIndex = sourceFrame * sourceChannels;
-                outputChunk[index * 2] = decodedPcm[sourceIndex];
-                outputChunk[index * 2 + 1] =
-                    sourceChannels == 1 ? decodedPcm[sourceIndex] : decodedPcm[sourceIndex + 1];
+                // 44.1 kHz olmayan parcalarda iki kaynak ornegi arasinda dogrusal ara deger
+                // alinir; ornek tekrarlamak metalik bir tini birakir. 44.1 kHz'de kesir 0'dir.
+                const int64_t sourcePosition =
+                    (static_cast<int64_t>(outputFramePosition + index) * sourceRate << 16) /
+                    audioSampleRate;
+                const int sourceFrame = min(samplesInFrame - 1, static_cast<int>(sourcePosition >> 16));
+                const int nextFrame = min(samplesInFrame - 1, sourceFrame + 1);
+                const int64_t fraction = sourcePosition & 0xFFFF;
+                for (int channel = 0; channel < 2; ++channel) {
+                    const int sourceChannel = sourceChannels == 1 ? 0 : channel;
+                    const int32_t current = decodedPcm[sourceFrame * sourceChannels + sourceChannel];
+                    const int32_t next = decodedPcm[nextFrame * sourceChannels + sourceChannel];
+                    outputChunk[index * 2 + channel] =
+                        static_cast<int16_t>(current + (((next - current) * fraction) >> 16));
+                }
             }
 
             if (!writePcmRing(reinterpret_cast<const uint8_t *>(outputChunk),
@@ -185,11 +202,12 @@ bool audioPlayerBegin() {
     }
 
     // minimp3 cozumleme sirasinda yigitta ~16 KB scratch kullanir; mp3dec_t bu yuzden heap'te.
+    // Oncelik LVGL'den (2) yuksek: cozucu geride kalirsa tampon bosalir ve ses cizirdar.
     if (xTaskCreatePinnedToCore(mp3DecodeTask,
                                 "MP3 decode",
                                 20 * 1024,
                                 nullptr,
-                                2,
+                                5,
                                 &mp3DecoderTaskHandle,
                                 0) != pdPASS) {
         mp3DecoderTaskHandle = nullptr;
@@ -210,7 +228,17 @@ AudioPlayResult audioPlayerPlay(const char *path) {
     ++playbackGeneration;
     resetPcmRing();
     xTaskNotifyGive(mp3DecoderTaskHandle);
+    Serial.printf("[MP3] calma: %s\n", path);
     return AudioPlayResult::Started;
+}
+
+void audioPlayerTakeStats(uint32_t &requestedBytes, uint32_t &deliveredBytes) {
+    portENTER_CRITICAL(&pcmRingMux);
+    requestedBytes = statsRequestedBytes;
+    deliveredBytes = statsDeliveredBytes;
+    statsRequestedBytes = 0;
+    statsDeliveredBytes = 0;
+    portEXIT_CRITICAL(&pcmRingMux);
 }
 
 size_t audioPlayerReadPcm(uint8_t *destination, size_t requestedBytes) {
@@ -219,6 +247,8 @@ size_t audioPlayerReadPcm(uint8_t *destination, size_t requestedBytes) {
     }
     portENTER_CRITICAL(&pcmRingMux);
     const size_t bytesToRead = min(requestedBytes, pcmBufferedBytes);
+    statsRequestedBytes += requestedBytes;
+    statsDeliveredBytes += bytesToRead;
     const size_t firstPart = min(bytesToRead, pcmRingBufferSize - pcmReadPosition);
     memcpy(destination, pcmRingBuffer + pcmReadPosition, firstPart);
     memcpy(destination + firstPart, pcmRingBuffer, bytesToRead - firstPart);
