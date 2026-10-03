@@ -7,6 +7,10 @@
 #include "ui/ui.h"
 #include "ui/screens.h"
 
+extern "C" {
+LV_FONT_DECLARE(lv_font_turkish_14);
+}
+
 namespace {
 constexpr int touchIrqPin = 36;
 constexpr int touchMosiPin = 32;
@@ -134,6 +138,7 @@ void onFolderEntryClicked(lv_event_t *event) {
         return;
     }
 
+    entryPath += ".mp3";
     selectedTrackPath = entryPath;
     lv_label_set_text_fmt(objects.folder_path_label, "Secildi: %s", selectedTrackPath.c_str());
 }
@@ -155,6 +160,7 @@ void addFolderEntry(const String &name, FolderEntryKind kind, uint16_t rowIndex)
     lv_obj_t *nameLabel = lv_label_create(button);
     lv_label_set_text(nameLabel, name.c_str());
     lv_label_set_long_mode(nameLabel, LV_LABEL_LONG_MODE_DOTS);
+    lv_obj_set_style_text_font(nameLabel, &lv_font_turkish_14, LV_PART_MAIN);
     lv_obj_set_width(nameLabel, 188);
     lv_obj_align(nameLabel, LV_ALIGN_LEFT_MID, 24, 0);
 }
@@ -199,9 +205,11 @@ void refreshFolderView() {
             }
             addFolderEntry(name, FolderEntryDirectory, rowIndex++);
         } else {
-            name.toLowerCase();
-            if (name.endsWith(".mp3")) {
-                addFolderEntry(String(entryName), FolderEntryTrack, rowIndex++);
+            String lowercaseName = name;
+            lowercaseName.toLowerCase();
+            if (lowercaseName.endsWith(".mp3")) {
+                name.remove(name.length() - 4);
+                addFolderEntry(name, FolderEntryTrack, rowIndex++);
             }
         }
         entry.close();
@@ -262,6 +270,7 @@ void setup() {
     lv_obj_set_pos(objects.folder_path_label, 8, 40);
     lv_obj_set_size(objects.folder_path_label, 224, 18);
     lv_label_set_long_mode(objects.folder_path_label, LV_LABEL_LONG_MODE_DOTS);
+    lv_obj_set_style_text_font(objects.folder_path_label, &lv_font_turkish_14, LV_PART_MAIN);
     refreshFolderView();
     xTaskCreatePinnedToCore(lvglTask, "LVGL", 12 * 1024, nullptr, 2, nullptr, 1);
 }
