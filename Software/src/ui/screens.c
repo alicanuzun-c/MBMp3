@@ -268,7 +268,7 @@ void create_screen_sc_folder() {
             objects.folder_path_label = obj;
             lv_obj_set_pos(obj, 90, 40);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_obj_set_style_text_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0xae83bd), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text_static(obj, "FOLDER");
@@ -277,8 +277,8 @@ void create_screen_sc_folder() {
             // folder_list
             lv_obj_t *obj = lv_obj_create(parent_obj);
             objects.folder_list = obj;
-            lv_obj_set_pos(obj, 0, 61);
-            lv_obj_set_size(obj, 240, 164);
+            lv_obj_set_pos(obj, 0, 56);
+            lv_obj_set_size(obj, 240, 194);
             lv_obj_set_scrollbar_mode(obj, LV_SCROLLBAR_MODE_ON);
             lv_obj_set_scroll_dir(obj, LV_DIR_BOTTOM);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xae83bd), LV_PART_MAIN | LV_STATE_DEFAULT);

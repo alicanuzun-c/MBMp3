@@ -31,7 +31,6 @@ SoftSpiDriver<sdMisoPin, sdMosiPin, sdClockPin> sdSoftSpi;
 SdFs sdCard;
 XPT2046_Touchscreen touchscreen(touchChipSelectPin, touchIrqPin);
 lv_display_t *display;
-lv_obj_t *coordinateLabels[3];
 lv_color_t drawBuffer[320 * drawBufferRows];
 
 SemaphoreHandle_t spiBusMutex;
@@ -73,9 +72,6 @@ void readTouch(lv_indev_t *, lv_indev_data_t *data) {
         const long measuredY = map(point.y, 240, 3800, 0, tft.height() - 1);
         lastX = constrain(map(measuredX, touchXAtLeft, touchXAtRight, 0, tft.width() - 1), 0, tft.width() - 1);
         lastY = constrain(map(measuredY, touchYAtTop, touchYAtBottom, 0, tft.height() - 1), 0, tft.height() - 1);
-        for (lv_obj_t *label : coordinateLabels) {
-            lv_label_set_text_fmt(label, "Ekran basladi\nX: %d   Y: %d", lastX, lastY);
-        }
         data->state = LV_INDEV_STATE_PRESSED;
     } else {
         data->state = LV_INDEV_STATE_RELEASED;
@@ -83,15 +79,6 @@ void readTouch(lv_indev_t *, lv_indev_data_t *data) {
 
     data->point.x = lastX;
     data->point.y = lastY;
-}
-
-void createCoordinateLabels() {
-    lv_obj_t *screens[] = { objects.sc_play, objects.sc_folder, objects.sc_settings };
-    for (size_t index = 0; index < 3; ++index) {
-        coordinateLabels[index] = lv_label_create(screens[index]);
-        lv_label_set_text(coordinateLabels[index], "Ekran basladi\nX: --   Y: --");
-        lv_obj_align(coordinateLabels[index], LV_ALIGN_TOP_MID, 0, 10);
-    }
 }
 
 void lvglTask(void *) {
@@ -272,7 +259,6 @@ void setup() {
     lv_indev_set_read_cb(touchInput, readTouch);
 
     ui_init();
-    createCoordinateLabels();
     lv_obj_set_pos(objects.folder_path_label, 8, 40);
     lv_obj_set_size(objects.folder_path_label, 224, 18);
     lv_label_set_long_mode(objects.folder_path_label, LV_LABEL_LONG_MODE_DOTS);
