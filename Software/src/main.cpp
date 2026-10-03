@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include <SD.h>
+#include <SdFat.h>
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
 #include <lvgl.h>
@@ -19,11 +19,16 @@ constexpr int touchYAtTop = 320;
 constexpr int touchYAtBottom = 0;
 constexpr uint32_t drawBufferRows = 20;
 
-// SD kart: SCK/MISO/MOSI ekranla ortak (14/12/13), sadece CS ayri
+// SD kart yazilimsal SPI pinleri; TFT ve dokunmatikten bagimsiz
 constexpr int sdChipSelectPin = 26;
+constexpr uint8_t sdMisoPin = 19;
+constexpr uint8_t sdMosiPin = 23;
+constexpr uint8_t sdClockPin = 18;
 
 TFT_eSPI tft;
 SPIClass touchscreenSPI(SPI);
+SoftSpiDriver<sdMisoPin, sdMosiPin, sdClockPin> sdSoftSpi;
+SdFs sdCard;
 XPT2046_Touchscreen touchscreen(touchChipSelectPin, touchIrqPin);
 lv_display_t *display;
 lv_obj_t *coordinateLabels[3];
@@ -97,13 +102,17 @@ void sdUnlock() { xSemaphoreGiveRecursive(spiBusMutex); }
 void listSdRoot() {
     if (!sdReady) return;
     sdLock();
-    File root = SD.open("/");
-    if (root) {
-        File entry = root.openNextFile();
-        while (entry) {
-            Serial.printf("%s%s  (%u bayt)\n", entry.name(), entry.isDirectory() ? "/" : "", (unsigned)entry.size());
+    FsFile root;
+    if (root.open("/", O_RDONLY)) {
+        FsFile entry;
+        char entryName[256];
+        while (entry.openNext(&root, O_RDONLY)) {
+            entry.getName(entryName, sizeof(entryName));
+            Serial.printf("%s%s  (%llu bayt)\n",
+                          entryName,
+                          entry.isDir() ? "/" : "",
+                          static_cast<unsigned long long>(entry.fileSize()));
             entry.close();
-            entry = root.openNextFile();
         }
         root.close();
     }
@@ -116,7 +125,7 @@ void setup() {
 
     spiBusMutex = xSemaphoreCreateRecursiveMutex();
 
-    // SD'yi tft.init'ten once pasif yap (ayni bus'ta karismasin)
+    // SD CS'i SD baslatilmadan once pasif tut.
     pinMode(sdChipSelectPin, OUTPUT);
     digitalWrite(sdChipSelectPin, HIGH);
 
@@ -131,11 +140,22 @@ void setup() {
     tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
 
-    // SD, TFT_eSPI'nin kullandigi SPI nesnesi uzerinden baslatilir (14/12/13)
+    Serial.printf("SD SoftSPI: CS=%u SCK=%u MISO=%u MOSI=%u\n",
+                  sdChipSelectPin,
+                  sdClockPin,
+                  sdMisoPin,
+                  sdMosiPin);
     sdLock();
-    sdReady = SD.begin(sdChipSelectPin, tft.getSPIinstance(), 400000);
+    sdReady = sdCard.begin(SdSpiConfig(
+        sdChipSelectPin,
+        DEDICATED_SPI,
+        SD_SCK_MHZ(0),
+        &sdSoftSpi));
     sdUnlock();
     Serial.println(sdReady ? "SD kart hazir" : "SD kart baslatilamadi");
+    if (!sdReady) {
+        sdCard.initErrorPrint();
+    }
     listSdRoot();
 
     lv_init();
