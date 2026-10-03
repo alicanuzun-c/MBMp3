@@ -2,7 +2,9 @@
 
 #include <time.h>
 
-// wifi_passwords.h varsa Wi-Fi'ye baglanir; baglaninca saat NTP ile senkronize edilir.
+// RTC'de gecerli saat yoksa ve wifi_passwords.h varsa Wi-Fi'ye baglanir, saati NTP'den alir
+// ve Wi-Fi bellegini birakmak icin kart bir kez yeniden baslatilir. Saat gecerliyse
+// (yazilimsal resetten sonra) Wi-Fi hic baslatilmaz.
 void wifiClockBegin();
 
 // Wi-Fi'yi tamamen kapatir. Saat senkronize olduysa RTC zamani tutmaya devam eder.

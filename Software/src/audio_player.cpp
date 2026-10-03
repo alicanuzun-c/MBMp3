@@ -7,7 +7,9 @@
 
 namespace {
 constexpr size_t mp3InputBufferSize = 4096;
-constexpr size_t pcmRingBufferSize = 4096;
+// Bir MP3 karesi 4.6 KB PCM uretir; tampon birkac kare tutmazsa Bluetooth tamponu bosaltir
+// ve araya sessizlik girer (ses cizirdar). 12 KB ~70 ms ses demek.
+constexpr size_t pcmRingBufferSize = 12 * 1024;
 constexpr size_t pcmChunkFrames = 128;
 constexpr uint32_t audioSampleRate = 44100;
 
