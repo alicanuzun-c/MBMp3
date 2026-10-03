@@ -13,7 +13,9 @@
 #define EEZ_FOR_LVGL 1
 #define EEZ_FOR_LVGL_LZ4_OPTION 0
 #define EEZ_FOR_LVGL_SHA256_OPTION 0
+#ifndef EEZ_FLOW_QUEUE_SIZE
 #define EEZ_FLOW_QUEUE_SIZE 1000
+#endif
 #define EEZ_FLOW_EVAL_STACK_SIZE 20
 
 #include <lvgl.h>
