@@ -129,13 +129,12 @@ void onFolderEntryClicked(lv_event_t *event) {
     }
 
     lv_obj_t *button = static_cast<lv_obj_t *>(lv_event_get_target(event));
-    lv_obj_t *label = lv_obj_get_child(button, 0);
-    if (label == nullptr) {
+    lv_obj_t *nameLabel = lv_obj_get_child(button, 1);
+    if (nameLabel == nullptr) {
         return;
     }
 
-    const String rowText = lv_label_get_text(label);
-    const String entryName = rowText.substring(6);
+    const String entryName = lv_label_get_text(nameLabel);
     String entryPath = currentDirectory;
     if (!entryPath.endsWith("/")) {
         entryPath += "/";
@@ -152,10 +151,9 @@ void onFolderEntryClicked(lv_event_t *event) {
     lv_label_set_text_fmt(objects.folder_path_label, "Secildi: %s", selectedTrackPath.c_str());
 }
 
-void addFolderEntry(const String &name, const char *prefix, FolderEntryKind kind, uint16_t rowIndex) {
-    const String rowText = String(prefix) + name;
+void addFolderEntry(const String &name, FolderEntryKind kind, uint16_t rowIndex) {
     lv_obj_t *button = lv_button_create(objects.folder_list);
-    lv_obj_set_pos(button, 4, 4 + rowIndex * 30);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 4 + rowIndex * 30);
     lv_obj_set_size(button, 224, 28);
     lv_obj_add_event_cb(
         button,
@@ -163,15 +161,20 @@ void addFolderEntry(const String &name, const char *prefix, FolderEntryKind kind
         LV_EVENT_CLICKED,
         reinterpret_cast<void *>(static_cast<uintptr_t>(kind)));
 
-    lv_obj_t *label = lv_label_create(button);
-    lv_label_set_text(label, rowText.c_str());
-    lv_label_set_long_mode(label, LV_LABEL_LONG_MODE_DOTS);
-    lv_obj_set_width(label, 212);
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 4, 0);
+    lv_obj_t *icon = lv_label_create(button);
+    lv_label_set_text(icon, kind == FolderEntryTrack ? LV_SYMBOL_AUDIO : LV_SYMBOL_DIRECTORY);
+    lv_obj_align(icon, LV_ALIGN_LEFT_MID, 4, 0);
+
+    lv_obj_t *nameLabel = lv_label_create(button);
+    lv_label_set_text(nameLabel, name.c_str());
+    lv_label_set_long_mode(nameLabel, LV_LABEL_LONG_MODE_DOTS);
+    lv_obj_set_width(nameLabel, 188);
+    lv_obj_align(nameLabel, LV_ALIGN_LEFT_MID, 24, 0);
 }
 
 void refreshFolderView() {
     lv_obj_clean(objects.folder_list);
+    lv_obj_set_style_pad_all(objects.folder_list, 0, LV_PART_MAIN);
     lv_label_set_text(objects.folder_path_label, currentDirectory.c_str());
 
     if (!sdReady) {
@@ -192,7 +195,7 @@ void refreshFolderView() {
 
     uint16_t rowIndex = 0;
     if (currentDirectory != "/") {
-        addFolderEntry("..", "[DIR] ", FolderEntryParent, rowIndex++);
+        addFolderEntry("geri", FolderEntryParent, rowIndex++);
     }
 
     FsFile entry;
@@ -201,11 +204,17 @@ void refreshFolderView() {
         entry.getName(entryName, sizeof(entryName));
         String name(entryName);
         if (entry.isDir()) {
-            addFolderEntry(name, "[DIR] ", FolderEntryDirectory, rowIndex++);
+            String lowercaseName = name;
+            lowercaseName.toLowerCase();
+            if (lowercaseName == "system volume information") {
+                entry.close();
+                continue;
+            }
+            addFolderEntry(name, FolderEntryDirectory, rowIndex++);
         } else {
             name.toLowerCase();
             if (name.endsWith(".mp3")) {
-                addFolderEntry(String(entryName), "[MP3] ", FolderEntryTrack, rowIndex++);
+                addFolderEntry(String(entryName), FolderEntryTrack, rowIndex++);
             }
         }
         entry.close();

@@ -281,6 +281,10 @@ void create_screen_sc_folder() {
             lv_obj_set_size(obj, 240, 164);
             lv_obj_set_scrollbar_mode(obj, LV_SCROLLBAR_MODE_ON);
             lv_obj_set_scroll_dir(obj, LV_DIR_BOTTOM);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xae83bd), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_outline_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_outline_color(obj, lv_color_hex(0xae83bd), LV_PART_MAIN | LV_STATE_DEFAULT);
         }
     }
     
