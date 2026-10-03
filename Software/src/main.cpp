@@ -140,11 +140,11 @@ void onFolderEntryClicked(lv_event_t *event) {
 
     entryPath += ".mp3";
     selectedTrackPath = entryPath;
-    lv_label_set_text_fmt(objects.folder_path_label, "Secildi: %s", selectedTrackPath.c_str());
+    lv_label_set_text_fmt(objects.current_screen, "Secildi: %s", selectedTrackPath.c_str());
 }
 
 void addFolderEntry(const String &name, FolderEntryKind kind, uint16_t rowIndex) {
-    lv_obj_t *button = lv_button_create(objects.folder_list);
+    lv_obj_t *button = lv_button_create(objects.folder_container);
     lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 4 + rowIndex * 30);
     lv_obj_set_size(button, 224, 28);
     lv_obj_add_event_cb(
@@ -166,12 +166,17 @@ void addFolderEntry(const String &name, FolderEntryKind kind, uint16_t rowIndex)
 }
 
 void refreshFolderView() {
-    lv_obj_clean(objects.folder_list);
-    lv_obj_set_style_pad_all(objects.folder_list, 0, LV_PART_MAIN);
-    lv_label_set_text(objects.folder_path_label, currentDirectory.c_str());
+    lv_obj_clean(objects.folder_container);
+    lv_obj_set_style_pad_all(objects.folder_container, 0, LV_PART_MAIN);
+    const bool folderTabActive = lv_tabview_get_tab_active(objects.tab_view) == 1;
+    if (folderTabActive) {
+        lv_label_set_text(objects.current_screen, currentDirectory.c_str());
+    }
 
     if (!sdReady) {
-        lv_label_set_text(objects.folder_path_label, "SD kart hazir degil");
+        if (folderTabActive) {
+            lv_label_set_text(objects.current_screen, "SD kart hazir degil");
+        }
         return;
     }
 
@@ -179,7 +184,9 @@ void refreshFolderView() {
     FsFile directory;
     if (!directory.open(currentDirectory.c_str(), O_RDONLY) || !directory.isDir()) {
         sdUnlock();
-        lv_label_set_text(objects.folder_path_label, "Klasor acilamadi");
+        if (folderTabActive) {
+            lv_label_set_text(objects.current_screen, "Klasor acilamadi");
+        }
         if (directory.isOpen()) {
             directory.close();
         }
@@ -217,8 +224,26 @@ void refreshFolderView() {
     directory.close();
     sdUnlock();
 
-    if (rowIndex == 0) {
-        lv_label_set_text(objects.folder_path_label, "Klasor bos veya MP3 yok");
+    if (rowIndex == 0 && folderTabActive) {
+        lv_label_set_text(objects.current_screen, "Klasor bos veya MP3 yok");
+    }
+}
+
+void onTabChanged(lv_event_t *event) {
+    if (lv_event_get_code(event) != LV_EVENT_VALUE_CHANGED) {
+        return;
+    }
+
+    switch (lv_tabview_get_tab_active(objects.tab_view)) {
+        case 0:
+            lv_label_set_text(objects.current_screen, "Play");
+            break;
+        case 1:
+            lv_label_set_text(objects.current_screen, currentDirectory.c_str());
+            break;
+        case 2:
+            lv_label_set_text(objects.current_screen, "Settings");
+            break;
     }
 }
 }
@@ -267,10 +292,13 @@ void setup() {
     lv_indev_set_read_cb(touchInput, readTouch);
 
     ui_init();
-    lv_obj_set_pos(objects.folder_path_label, 8, 40);
-    lv_obj_set_size(objects.folder_path_label, 224, 18);
-    lv_label_set_long_mode(objects.folder_path_label, LV_LABEL_LONG_MODE_DOTS);
-    lv_obj_set_style_text_font(objects.folder_path_label, &lv_font_turkish_14, LV_PART_MAIN);
+    lv_label_set_text(objects.current_screen, "Play");
+    lv_obj_set_pos(objects.current_screen, 52, 12);
+    lv_obj_set_size(objects.current_screen, 136, 18);
+    lv_label_set_long_mode(objects.current_screen, LV_LABEL_LONG_MODE_DOTS);
+    lv_obj_set_style_text_align(objects.current_screen, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_set_style_text_font(objects.current_screen, &lv_font_turkish_14, LV_PART_MAIN);
+    lv_obj_add_event_cb(objects.tab_view, onTabChanged, LV_EVENT_VALUE_CHANGED, nullptr);
     refreshFolderView();
     xTaskCreatePinnedToCore(lvglTask, "LVGL", 12 * 1024, nullptr, 2, nullptr, 1);
 }

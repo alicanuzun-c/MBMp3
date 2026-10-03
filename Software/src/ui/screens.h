@@ -12,38 +12,31 @@ extern "C" {
 enum ScreensEnum {
     _SCREEN_ID_FIRST = 1,
     SCREEN_ID_SC_PLAY = 1,
-    SCREEN_ID_SC_FOLDER = 2,
-    SCREEN_ID_SC_SETTINGS = 3,
-    _SCREEN_ID_LAST = 3
+    _SCREEN_ID_LAST = 1
 };
 
 typedef struct _objects_t {
     lv_obj_t *sc_play;
-    lv_obj_t *sc_folder;
-    lv_obj_t *sc_settings;
+    lv_obj_t *nav_top;
+    lv_obj_t *charge;
+    lv_obj_t *current_screen;
+    lv_obj_t *time;
+    lv_obj_t *nav_bottom;
     lv_obj_t *button_play;
     lv_obj_t *button_folder;
     lv_obj_t *button_settings;
-    lv_obj_t *button_play_1;
-    lv_obj_t *button_folder_1;
-    lv_obj_t *button_settings_1;
-    lv_obj_t *folder_path_label;
-    lv_obj_t *folder_list;
-    lv_obj_t *button_play_2;
-    lv_obj_t *button_folder_2;
-    lv_obj_t *button_settings_2;
+    lv_obj_t *tab_view;
+    lv_obj_t *tab_view_bar;
+    lv_obj_t *tab_play;
+    lv_obj_t *tab_folder;
+    lv_obj_t *folder_container;
+    lv_obj_t *tab_settings;
 } objects_t;
 
 extern objects_t objects;
 
 void create_screen_sc_play();
 void tick_screen_sc_play();
-
-void create_screen_sc_folder();
-void tick_screen_sc_folder();
-
-void create_screen_sc_settings();
-void tick_screen_sc_settings();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);
