@@ -3,9 +3,18 @@
 #include <SdFat.h>
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
+#include <WiFi.h>
 #include <lvgl.h>
+#include <time.h>
 #include "ui/ui.h"
 #include "ui/screens.h"
+
+#if __has_include("wifi_passwords.h")
+#include "wifi_passwords.h"
+#else
+#define MBMP3_WIFI_SSID ""
+#define MBMP3_WIFI_PASSWORD ""
+#endif
 
 extern "C" {
 LV_FONT_DECLARE(lv_font_turkish_14);
@@ -21,7 +30,7 @@ constexpr int touchXAtLeft = 240;
 constexpr int touchXAtRight = 0;
 constexpr int touchYAtTop = 320;
 constexpr int touchYAtBottom = 0;
-constexpr uint32_t drawBufferRows = 20;
+constexpr uint32_t drawBufferRows = 12;
 
 // SD kart yazilimsal SPI pinleri; TFT ve dokunmatikten bagimsiz
 constexpr int sdChipSelectPin = 26;
@@ -39,6 +48,8 @@ lv_color_t drawBuffer[320 * drawBufferRows];
 
 SemaphoreHandle_t spiBusMutex;
 bool sdReady = false;
+bool ntpConfigured = false;
+uint32_t lastWifiUiUpdate = 0;
 String currentDirectory = "/";
 String selectedTrackPath;
 
@@ -50,6 +61,33 @@ enum FolderEntryKind : uintptr_t {
 
 uint32_t getMillis() {
     return millis();
+}
+
+bool wifiCredentialsAvailable() {
+    return MBMP3_WIFI_SSID[0] != '\0';
+}
+
+void startWifiConnection() {
+    if (!wifiCredentialsAvailable()) {
+        WiFi.mode(WIFI_OFF);
+        return;
+    }
+
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true);
+    WiFi.begin(MBMP3_WIFI_SSID, MBMP3_WIFI_PASSWORD);
+}
+
+void updateClock() {
+    if (WiFi.status() == WL_CONNECTED && !ntpConfigured) {
+        configTzTime("TRT-3", "pool.ntp.org", "time.cloudflare.com");
+        ntpConfigured = true;
+    }
+
+    struct tm localTime;
+    if (getLocalTime(&localTime, 10)) {
+        lv_label_set_text_fmt(objects.time, "%02d:%02d", localTime.tm_hour, localTime.tm_min);
+    }
 }
 
 void flushDisplay(lv_display_t *display, const lv_area_t *area, uint8_t *pixels) {
@@ -88,6 +126,10 @@ void readTouch(lv_indev_t *, lv_indev_data_t *data) {
 void lvglTask(void *) {
     for (;;) {
         ui_tick();
+        if (millis() - lastWifiUiUpdate >= 1000) {
+            lastWifiUiUpdate = millis();
+            updateClock();
+        }
         const uint32_t waitMs = lv_timer_handler();
         vTaskDelay(pdMS_TO_TICKS(waitMs < 5 ? 5 : waitMs));
     }
@@ -292,6 +334,8 @@ void setup() {
     lv_indev_set_read_cb(touchInput, readTouch);
 
     ui_init();
+    lv_label_set_text(objects.time, "--:--");
+    startWifiConnection();
     lv_label_set_text(objects.current_screen, "Play");
     lv_obj_set_pos(objects.current_screen, 52, 12);
     lv_obj_set_size(objects.current_screen, 136, 18);
